@@ -50,7 +50,7 @@ export default defineConfig({
         assetsInlineLimit: 0,
         lib: {
             entry: path.resolve(__dirname, './src/index.ts'),
-            name: '@kortexa-ai/ui',
+            name: '@kortexa-ai-private/ui',
             formats: ['es'],
         },
         rollupOptions: {
@@ -64,7 +64,7 @@ export default defineConfig({
                 '@react-three/drei',
                 '@react-three/rapier',
                 '@react-three/xr',
-                '@kortexa-ai/core',
+                '@kortexa-ai-private/core',
             ],
             output: {
                 assetFileNames: (assetInfo) => {
@@ -78,7 +78,7 @@ export default defineConfig({
                     react: 'React',
                     'react-dom': 'ReactDOM',
                     'react/jsx-runtime': 'jsxRuntime',
-                    '@kortexa-ai/core': 'KortexaCore',
+                    '@kortexa-ai-private/core': 'KortexaCore',
                 },
             },
         },

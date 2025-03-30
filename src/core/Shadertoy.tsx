@@ -155,7 +155,7 @@ export function Shadertoy({
   ): string => {
     return body.replace(
       new RegExp(`(${type}\\s+([a-zA-Z_]\\w*(?:\\s*,\\s*[a-zA-Z_]\\w*(?:\\s*=\\s*[^;]+?)?)*)\\s*;)`, 'g'),
-      (decl: string, fullDecl: string, varList: string): string => {
+      (_decl: string, _fullDecl: string, varList: string): string => {
         console.log(`Found uninitialized ${type} variables`);
         const vars: string[] = [];
         let currentVar: string = '';
@@ -241,7 +241,7 @@ export function Shadertoy({
     // Fix mat2(cos(...+vec4(...))) to preserve Shadertoy behavior
     processedCode = processedCode.replace(
       /mat2\s*\(\s*cos\s*\(\s*([^)]+)\+vec4\s*\(([^)]+)\)\s*\)\s*\)\s*(\*?\s*[0-9.]+)?/g,
-      (match, expr, vec4Args, scale) => {
+      (_match, expr, vec4Args, scale) => {
         const angleExpr = `${expr}+vec4(${vec4Args})`;
         const scaleFactor = scale ? scale.trim() : '';
         return `mat2(cos(${angleExpr})${scaleFactor})`; // Keep Shadertoy's vec4 matrix construction
@@ -251,11 +251,11 @@ export function Shadertoy({
     // Clamp all exp calls, multiple passes for nesting
     processedCode = processedCode.replace(
       /exp\s*\(\s*([^()]+|\([^()]*\))\s*\)/g,
-      (match, arg) => `exp(clamp(${arg}, -87.0, 87.0))`
+      (_match, arg) => `exp(clamp(${arg}, -87.0, 87.0))`
     );
     processedCode = processedCode.replace(
       /exp\s*\(\s*([^()]+|\([^()]*\))\s*\)/g,
-      (match, arg) => `exp(clamp(${arg}, -87.0, 87.0))`
+      (_match, arg) => `exp(clamp(${arg}, -87.0, 87.0))`
     );
 
     // Initialize out vec4 fragColor if not assigned before use
@@ -282,7 +282,7 @@ export function Shadertoy({
     // Initialize uninitialized float, vec2, vec3, and vec4 variables inside mainImage
     processedCode = processedCode.replace(
       /(void mainImage\s*\(\s*out vec4 fragColor[^)]*\)\s*{)([\s\S]*?)}/,
-      (match: string, signature: string, body: string): string => {
+      (_match: string, signature: string, body: string): string => {
         let updatedBody: string = body;
         // Process float declarations
         updatedBody = initializeVariables(updatedBody, 'float', '0.');

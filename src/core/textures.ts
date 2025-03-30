@@ -5,7 +5,8 @@
  * due to React Native compatibility issues. It's kept here for future implementation.
  */
 
-import { Texture, TextureLoader, DataTexture, RGBAFormat, UnsignedByteType } from 'three';
+import type { Texture, Wrapping, MagnificationTextureFilter, MinificationTextureFilter } from 'three';
+import { TextureLoader, DataTexture, RGBAFormat, UnsignedByteType } from 'three';
 
 /**
  * Create a simple checkered grid texture for testing
@@ -54,12 +55,12 @@ export function createCheckerTexture(
 
 // Interface for texture properties
 export interface TextureProps {
-  url: string;                  // URL of the texture
-  wrapS?: number;               // Wrapping mode for S (horizontal)
-  wrapT?: number;               // Wrapping mode for T (vertical)
-  minFilter?: number;           // Minification filter
-  magFilter?: number;           // Magnification filter
-  flipY?: boolean;              // Whether to flip the texture vertically
+  url: string;                            // URL of the texture
+  wrapS?: Wrapping;                       // Wrapping mode for S (horizontal)
+  wrapT?: Wrapping;                       // Wrapping mode for T (vertical)
+  minFilter?: MinificationTextureFilter;  // Minification filter
+  magFilter?: MagnificationTextureFilter; // Magnification filter
+  flipY?: boolean;                        // Whether to flip the texture vertically
 }
 
 /**
@@ -123,8 +124,8 @@ export function createTextureUniforms(
   shaderCode: string,
   channelPrefix: string = 'iChannel',
   resolutionUniform: string = 'iChannelResolution'
-): Record<string, any> {
-  const uniformsObj: Record<string, any> = {};
+): Record<string, unknown> {
+  const uniformsObj: Record<string, unknown> = {};
   
   if (loadedTextures.length === 0) {
     return uniformsObj;
