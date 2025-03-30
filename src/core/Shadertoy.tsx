@@ -23,7 +23,7 @@ import { OrthographicCamera } from '@react-three/drei';
 
 // Import texture definitions and utilities
 import type { TextureProps } from './textures';
-import { createTextureUniforms } from './textures';
+import { createCheckerTexture, createTextureUniforms } from './textures';
 
 // Register ShaderMaterial with React Three Fiber
 extend({ ShaderMaterial });
@@ -133,15 +133,13 @@ export function Shadertoy({
   const [loadedTextures, setLoadedTextures] = useState<(Texture | null)[]>([]);
 
   useEffect(() => {
-    import('./textures').then(({ createCheckerTexture }) => {
-      const checkerTexture = createCheckerTexture(
-        256,
-        8,
-        [255, 0, 0, 255],
-        [0, 255, 255, 255]
-      );
-      setLoadedTextures([checkerTexture]);
-    });
+    const checkerTexture = createCheckerTexture(
+      256,
+      8,
+      [255, 0, 0, 255],
+      [0, 255, 255, 255]
+    );
+    setLoadedTextures([checkerTexture]);
     return () => {
       loadedTextures.forEach(texture => texture?.dispose());
     };
