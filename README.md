@@ -1,35 +1,56 @@
-# Discord to SLOP Adapter
+## Shadertoy React component
 
-A lightweight adapter that connects [Discord](https://discord.com/) bots with any [SLOP](https://github.com/agnt-gg/slop) (Simple Language Open Protocol) compatible server.
+React-shadertoy is a lightweight component for using Shadertoy shaders in React and React Native applications. It provides two components - a `Shadertoy` component for embedding Shadertoy shaders on a plane in your own scene, and a `ShadertoyCanvas` component for showing Shadertoy shaders in their own canvas in your DOM tree.
 
-## What is Discord and SLOP?
-
-- **Discord**: A popular communication platform for communities, servers, and channels. [Learn more about Discord](https://discord.com/).
-- **SLOP (Simple Language Open Protocol)**: A simple open-source REST-based pattern for AI APIs with 5 basic endpoints. [Learn more about SLOP](https://github.com/agnt-gg/slop) or join the [SLOP Discord community](https://discord.com/invite/nwXJMnHmXP).
-
-## Features
-
-This adapter bridges Discord and SLOP by:
-
-- Converting Discord commands to SLOP API calls
-- Exposing SLOP resources as Discord resources
-- Handling error conversion between protocols
-
-## Installation & Usage
-
-### Using npx
-
-You can run the adapter directly using npx:
+## Installation
 
 ```bash
-npx @kortexa-ai/discord-slop-adapter http://your-slop-server-url
+npm install @kortexa-ai/react-shadertoy
 ```
 
-### Global Installation
+## Usage
+
+```tsx
+import { Shadertoy, ShadertoyCanvas } from '@kortexa-ai/react-shadertoy';
+```
+
+### Shadertoy
+
+The `Shadertoy` component is a React component that embeds a Shadertoy shader in a plane in your own scene. It takes a `shader` prop, which is the shader code to be embedded.
+
+```tsx
+import { Shadertoy } from '@kortexa-ai/react-shadertoy';
+
+function App() {
+  return (
+    <Canvas>
+      <Shadertoy fs={SHADER_CODE} />
+    </Canvas>
+  );
+}
+```
+
+### ShadertoyCanvas
+
+The `ShadertoyCanvas` component is a React component that embeds a Shadertoy shader in a canvas in your DOM tree. It takes a `fs` prop, which is the shader code to be embedded.
+
+```tsx
+import { ShadertoyCanvas } from '@kortexa-ai/react-shadertoy';
+
+function App() {
+  return (
+    <ShadertoyCanvas fs={SHADER_CODE} />
+  );
+}
+```
+
+## Develop
+
+React-shadertoy supports both React 18, and React 19, as well as Expo v52 / React Native v0.76. because some of these have conflicting dependencies, you have to npm install with `--legacy-peer-deps`.
 
 ```bash
-npm install -g @kortexa-ai/discord-slop-adapter
-mcp-slop-adapter http://your-slop-server-url
+npm install --legacy-peer-deps
+npm run build
 ```
 
 ## License

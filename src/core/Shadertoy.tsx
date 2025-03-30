@@ -1,7 +1,7 @@
 /**
- * ShaderToy Component
+ * Shadertoy Component
  *
- * Core component that renders ShaderToy shaders.
+ * Core component that renders Shadertoy shaders.
  * This component requires a React Three Fiber Canvas parent to work.
  *
  * === Implementation Notes ===
@@ -16,10 +16,10 @@
  * See TODO comments throughout the code for more specific details on each item.
  */
 
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { ShaderMaterial, Color, Texture } from 'three';
-import { extend, useFrame, useThree } from '@react-three/fiber/native';
-import { OrthographicCamera } from '@react-three/drei/native';
+import { extend, useFrame, useThree } from '@react-three/fiber';
+import { OrthographicCamera } from '@react-three/drei';
 
 // Import texture definitions and utilities
 import type { TextureProps } from './textures';
@@ -29,7 +29,7 @@ import { createTextureUniforms } from './textures';
 extend({ ShaderMaterial });
 
 /**
- * ShaderToy Built-in Uniforms
+ * Shadertoy Built-in Uniforms
  */
 const UNIFORM_TIME = "iTime";
 const UNIFORM_TIMEDELTA = "iTimeDelta";
@@ -98,7 +98,7 @@ interface Uniform {
   value: number | number[];
 }
 
-export interface ShaderToyProps {
+export interface ShadertoyProps {
   fs?: string;
   vs?: string;
   textures?: TextureProps[];
@@ -110,7 +110,7 @@ export interface ShaderToyProps {
   devicePixelRatio?: number;
 }
 
-export function ShaderToy({
+export function Shadertoy({
   fs = BASIC_FS,
   vs = BASIC_VS,
   textures = [],
@@ -120,7 +120,7 @@ export function ShaderToy({
   width,
   height,
   devicePixelRatio = 1,
-}: ShaderToyProps) {
+}: ShadertoyProps) {
   const { size: { width: useWidth, height: useHeight }, scene, gl } = useThree();
   const actualWidth = width || useWidth;
   const actualHeight = height || useHeight;
@@ -238,13 +238,13 @@ export function ShaderToy({
       }
     );
 
-    // Fix mat2(cos(...+vec4(...))) to preserve ShaderToy behavior
+    // Fix mat2(cos(...+vec4(...))) to preserve Shadertoy behavior
     processedCode = processedCode.replace(
       /mat2\s*\(\s*cos\s*\(\s*([^)]+)\+vec4\s*\(([^)]+)\)\s*\)\s*\)\s*(\*?\s*[0-9.]+)?/g,
       (match, expr, vec4Args, scale) => {
         const angleExpr = `${expr}+vec4(${vec4Args})`;
         const scaleFactor = scale ? scale.trim() : '';
-        return `mat2(cos(${angleExpr})${scaleFactor})`; // Keep ShaderToy's vec4 matrix construction
+        return `mat2(cos(${angleExpr})${scaleFactor})`; // Keep Shadertoy's vec4 matrix construction
       }
     );
 
@@ -454,4 +454,4 @@ export const ClampToEdgeWrapping = 33071;
 export const MirroredRepeatWrapping = 33648;
 export const RepeatWrapping = 10497;
 
-export default ShaderToy;
+export default Shadertoy;

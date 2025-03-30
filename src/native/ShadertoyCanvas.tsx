@@ -4,10 +4,10 @@
  * A convenient wrapper that provides a Canvas for the ShaderToy component.
  */
 import { Canvas, CanvasProps } from '@react-three/fiber/native';
-import { ShaderToy, ShaderToyProps } from '../ShaderToy';
+import { Shadertoy, type ShadertoyProps } from '../core/Shadertoy';
 
 // Props interface with added style property
-export interface ShaderToyCanvasProps extends ShaderToyProps {
+export interface ShadertoyCanvasProps extends ShadertoyProps {
     style?: any;
     customProps?: Partial<CanvasProps>;
 }
@@ -28,16 +28,16 @@ gl={{
 */
 
 /**
- * ShaderToyCanvas Component
+ * ShadertoyCanvas Component
  *
- * Wraps the ShaderToy component with a Canvas, making it ready to use
+ * Wraps the Shadertoy component with a Expo native Canvas, making it ready to use
  * without requiring a separate Canvas setup.
  */
-export function ShaderToyCanvas({
+export function ShadertoyCanvas({
     style = {},
     customProps = {},
     ...props
-}: ShaderToyCanvasProps) {
+}: ShadertoyCanvasProps) {
     return (
         <Canvas
             orthographic={true}
@@ -57,9 +57,9 @@ export function ShaderToyCanvas({
             }}
             {...customProps}
         >
-            <ShaderToy {...props} />
+            <Shadertoy {...props} />
         </Canvas>
     );
 }
 
-export default ShaderToyCanvas;
+export default ShadertoyCanvas;

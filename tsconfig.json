@@ -8,6 +8,7 @@
       "sourceMap": true,
       "incremental": true,
       "tsBuildInfoFile": "./build/.tsbuildinfo",
+      "jsx": "react-jsx",
 
       /* Module Resolution */
       "moduleResolution": "bundler",
@@ -15,6 +16,9 @@
       "baseUrl": ".",
       "rootDir": "./src",
       "outDir": "./dist",
+      "paths": {
+        "@/*": ["./src/*"]
+      },
       "allowSyntheticDefaultImports": true,
       "resolveJsonModule": true,
       "isolatedModules": true,
@@ -27,7 +31,8 @@
       "noUnusedLocals": true,
       "noUnusedParameters": true,
       "noFallthroughCasesInSwitch": true,
-      "noUncheckedSideEffectImports": true
+      "noUncheckedSideEffectImports": true,
+      "noImplicitReturns": true
   },
   "include": [
       "./src/**/*"
