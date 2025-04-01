@@ -32,13 +32,19 @@
     "CHANGELOG.md"
   ],
   "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "native": "./dist/native.js",
   "exports": {
     ".": {
+      "module": "./dist/index.js",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js"
+    },
+    "./native": {
+      "module": "./dist/native.js",
+      "types": "./dist/native.d.ts",
+      "import": "./dist/native.js",
+      "require": "./dist/native.js"
     }
   },
   "scripts": {
