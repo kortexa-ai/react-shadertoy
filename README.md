@@ -1,4 +1,4 @@
-## Shadertoy React component
+## Description
 
 React-shadertoy is a lightweight component for using Shadertoy shaders in React and React Native applications. It provides two components - a `Shadertoy` component for embedding Shadertoy shaders on a plane in your own scene, and a `ShadertoyCanvas` component for showing Shadertoy shaders in their own canvas in your DOM tree.
 
@@ -11,12 +11,12 @@ npm install @kortexa-ai/react-shadertoy
 ## Usage
 
 ```tsx
-import { Shadertoy, ShadertoyCanvas } from '@kortexa-ai/react-shadertoy';
+import { Shadertoy } from '@kortexa-ai/react-shadertoy';
 ```
 
 ### Shadertoy
 
-The `Shadertoy` component is a React component that embeds a Shadertoy shader in a plane in your own scene. It takes a `shader` prop, which is the shader code to be embedded.
+The `Shadertoy` component is a React component that embeds a Shadertoy shader in a plane in your own scene. It takes a `fs` prop, which is the shader code to be embedded. You can also pass `vs` prop for an optional vertex shader.
 
 ```tsx
 import { Shadertoy } from '@kortexa-ai/react-shadertoy';
@@ -31,6 +31,8 @@ function App() {
 ```
 
 ### ShadertoyCanvas
+
+** NOTE: This component is currently disabled.
 
 The `ShadertoyCanvas` component is a React component that embeds a Shadertoy shader in a canvas in your DOM tree. It takes a `fs` prop, which is the shader code to be embedded.
 
