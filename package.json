@@ -1,6 +1,6 @@
 {
     "name": "@kortexa-ai/react-shadertoy",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "React component for Shadertoy shaders",
     "copyright": "Copyright © 2025 kortexa.ai",
     "author": {
