@@ -55,6 +55,5 @@ npm install --legacy-peer-deps
 npm run build
 ```
 
-## License
-
-MIT
+-------------------
+© 2025 kortexa.ai
