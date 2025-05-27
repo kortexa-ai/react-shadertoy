@@ -15,39 +15,44 @@ export default defineConfig({
     ],
     optimizeDeps: {
         esbuildOptions: {
-            tsconfig: './tsconfig.app.json'
-        }
+            tsconfig: "./tsconfig.app.json",
+        },
     },
     resolve: {
         alias: {
-            "@": path.resolve(__dirname, './src'),
+            "@": path.resolve(__dirname, "./src"),
         },
     },
     build: {
-        outDir: './dist',
+        outDir: "./dist",
         chunkSizeWarningLimit: 2500,
         assetsInlineLimit: 0,
         lib: {
-            entry: path.resolve(__dirname, './src/index.ts'),
-            name: '@kortexa-ai/react-shadertoy',
-            formats: ['es', 'cjs'],
+            entry: path.resolve(__dirname, "./src/index.ts"),
+            name: "@kortexa-ai/react-shadertoy",
+            formats: ["es"],
         },
         rollupOptions: {
             external: [
-                'react',
-                'react-dom',
-                'react/jsx-runtime',
-                'three',
-                '@react-three/fiber',
-                '@react-three/drei',
+                "react",
+                "react-dom",
+                "react/jsx-runtime",
+                "three",
+                "@react-three/fiber",
+                "@react-three/drei",
             ],
             output: {
                 globals: {
-                    react: 'React',
-                    'react-dom': 'ReactDOM',
-                    'react/jsx-runtime': 'jsxRuntime',
+                    react: "React",
+                    "react-dom": "ReactDOM",
+                    "react/jsx-runtime": "jsxRuntime",
+                    three: "three",
+                    "@react-three/fiber": "@react-three/fiber",
+                    "@react-three/drei": "@react-three/drei",
                 },
             },
         },
+        sourcemap: true,
+        emptyOutDir: true,
     },
-})
+});

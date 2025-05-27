@@ -11,7 +11,7 @@ npm install @kortexa-ai/react-shadertoy
 ## Usage
 
 ```tsx
-import { Shadertoy } from '@kortexa-ai/react-shadertoy';
+import { Shadertoy } from "@kortexa-ai/react-shadertoy";
 ```
 
 ### Shadertoy
@@ -19,30 +19,28 @@ import { Shadertoy } from '@kortexa-ai/react-shadertoy';
 The `Shadertoy` component is a React component that embeds a Shadertoy shader in a plane in your own scene. It takes a `fs` prop, which is the shader code to be embedded. You can also pass `vs` prop for an optional vertex shader.
 
 ```tsx
-import { Shadertoy } from '@kortexa-ai/react-shadertoy';
+import { Shadertoy } from "@kortexa-ai/react-shadertoy";
 
 function App() {
-  return (
-    <Canvas>
-      <Shadertoy fs={SHADER_CODE} />
-    </Canvas>
-  );
+    return (
+        <Canvas>
+            <Shadertoy fs={SHADER_CODE} />
+        </Canvas>
+    );
 }
 ```
 
 ### ShadertoyCanvas
 
-** NOTE: This component is currently disabled.
+\*\* NOTE: This component is currently disabled.
 
 The `ShadertoyCanvas` component is a React component that embeds a Shadertoy shader in a canvas in your DOM tree. It takes a `fs` prop, which is the shader code to be embedded.
 
 ```tsx
-import { ShadertoyCanvas } from '@kortexa-ai/react-shadertoy';
+import { ShadertoyCanvas } from "@kortexa-ai/react-shadertoy";
 
 function App() {
-  return (
-    <ShadertoyCanvas fs={SHADER_CODE} />
-  );
+    return <ShadertoyCanvas fs={SHADER_CODE} />;
 }
 ```
 
@@ -55,5 +53,22 @@ npm install --legacy-peer-deps
 npm run build
 ```
 
--------------------
+## Troubleshooting
+
+Don't forget to deduplicate Three.js and @react-three/fiber in your vite config:
+
+```ts
+resolve: {
+    dedupe: [
+        "react",
+        "react-dom",
+        "three",
+        "@react-three/fiber",
+        "@kortexa-ai/react-shadertoy"
+    ]
+}
+```
+
+---
+
 © 2025 kortexa.ai
