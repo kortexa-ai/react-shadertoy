@@ -1,40 +1,48 @@
 {
-  "compilerOptions": {
-      /* Build Configuration */
-      "target": "ESNext",
-      "module": "ESNext",
-      "declaration": true,
-      "declarationMap": true,
-      "sourceMap": true,
-      "incremental": true,
-      "tsBuildInfoFile": "./build/.tsbuildinfo",
-      "jsx": "react-jsx",
+    "compilerOptions": {
+        /* Build Configuration */
+        "target": "ESNext",
+        "module": "ESNext",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "incremental": true,
+        "tsBuildInfoFile": "./build/.tsbuildinfo",
+        "jsx": "react-jsx",
 
-      /* Module Resolution */
-      "moduleResolution": "bundler",
-      "moduleDetection": "force",
-      "baseUrl": ".",
-      "rootDir": "./src",
-      "outDir": "./dist",
-      "paths": {
-        "@/*": ["./src/*"]
-      },
-      "allowSyntheticDefaultImports": true,
-      "resolveJsonModule": true,
-      "isolatedModules": true,
-      "verbatimModuleSyntax": true,
+        /* Module Resolution */
+        "moduleResolution": "bundler",
+        "moduleDetection": "force",
+        "baseUrl": ".",
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "verbatimModuleSyntax": true,
 
-      /* Type Checking */
-      "strict": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
-      "noFallthroughCasesInSwitch": true,
-      "noUncheckedSideEffectImports": true,
-      "noImplicitReturns": true
-  },
-  "include": [
-      "./src/**/*"
-  ]
+        /* Type Checking */
+        "strict": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedSideEffectImports": true,
+        "noImplicitReturns": true
+    },
+    "include": ["./src/**/*"],
+    "exclude": [
+        "./src/**/*.test.ts",
+        "./src/**/*.test.tsx",
+        "./src/**/*.test.js",
+        "./src/**/*.test.jsx",
+        "./src/**/*.spec.ts",
+        "./src/**/*.spec.tsx",
+        "./src/**/*.spec.js",
+        "./src/**/*.spec.jsx"
+    ]
 }

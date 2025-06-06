@@ -3,11 +3,15 @@
     "compilerOptions": {
         /* Runtime Environment */
         "lib": ["ESNext"],
-        "types": ["node"],
+        "types": ["node"]
     },
     "include": [
         "./*.config.js",
         "./*.config.ts",
+        "./scripts/**/*.ts",
+        "./scripts/**/*.tsx",
+        "./scripts/**/*.js",
+        "./scripts/**/*.jsx"
     ],
     "exclude": ["./src/**/*"]
 }
