@@ -1,9 +1,9 @@
-import path from "path"
-import dts from 'vite-plugin-dts'
-import react from "@vitejs/plugin-react-swc"
-import glsl from 'vite-plugin-glsl'
+import path from "node:path";
+import dts from "vite-plugin-dts";
+import react from "@vitejs/plugin-react-swc";
+import glsl from "vite-plugin-glsl";
 
-import { defineConfig } from 'vite'
+import { defineConfig } from "vite";
 
 export default defineConfig({
     plugins: [
