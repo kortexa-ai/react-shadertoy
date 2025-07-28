@@ -2,6 +2,10 @@
 
 React-shadertoy is a lightweight component for using Shadertoy shaders in React and React Native applications. It provides two components - a `Shadertoy` component for embedding Shadertoy shaders on a plane in your own scene, and a `ShadertoyCanvas` component for showing Shadertoy shaders in their own canvas in your DOM tree.
 
+## Demo
+
+[Live Demo](https://kortexa-ai.github.io/react-shadertoy/) - Interactive examples showcasing the Shadertoy component
+
 ## Installation
 
 ```bash
