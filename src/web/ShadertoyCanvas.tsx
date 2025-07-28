@@ -8,7 +8,7 @@ import { Shadertoy, type ShadertoyProps } from '../core/Shadertoy';
 
 // Props interface with added style property
 export interface ShadertoyCanvasProps extends ShadertoyProps {
-    style?: any;
+    style?: React.CSSProperties;
     customProps?: Partial<CanvasProps>;
 }
 

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2025-07-27
+
+### Added
+- Shadertoy web example
+
+### Fixed
+- Resize issues with the canvas
+
 ## [0.1.1] - 2025-03-31
 
 ### Removed

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Play, Pause, RotateCcw, SkipForward } from "lucide-react";
-import { Canvas } from "@react-three/fiber";
-import { Shadertoy } from "../../../index";
-// import { ShadertoyCanvas } from "../../../index";
+// import { Canvas } from "@react-three/fiber";
+// import { Shadertoy } from "../../../index";
+import { ShadertoyCanvas } from "../../../index";
 
 // Example shaders
 const SIMPLE_SHADER = `
@@ -65,7 +65,7 @@ const shaderExamples = [
 function ShaderDemo() {
     const [currentShaderIndex, setCurrentShaderIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(true);
-    const [startTime] = useState(Date.now());
+    // const [startTime] = useState(Date.now());
 
     const currentShader = shaderExamples[currentShaderIndex];
 
@@ -94,7 +94,7 @@ function ShaderDemo() {
             </div>
 
             <div className="shader-view-container">
-                <Canvas
+                {/* <Canvas
                     orthographic={true}
                     resize={{
                         scroll: true,
@@ -106,15 +106,15 @@ function ShaderDemo() {
                     }}
                 >
                     <Shadertoy fs={currentShader.code} />
-                </Canvas>
+                </Canvas> */}
 
-                {/* <ShadertoyCanvas
+                <ShadertoyCanvas
                     fs={currentShader.code}
                     style={{
                         border: "2px solid #333",
                         borderRadius: "8px",
                     }}
-                /> */}
+                />
             </div>
 
             <div className="button-row">

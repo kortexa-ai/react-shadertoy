@@ -2,22 +2,30 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import importPlugin from "eslint-plugin-import";
 
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+
 import globals from "globals";
 
 export default tseslint.config(
     {
         ignores: [
-            "**/*.test.{js,ts}",
-            "**/*.spec.{js,ts}",
+            "src/components/ui/**",
+            "**/*.test.{js,ts,jsx,tsx}",
+            "**/*.spec.{js,ts,jsx,tsx}",
             "node_modules/**",
             "build/**",
             "dist/**",
             "dev-dist/**",
             "coverage/**",
+            "public/**",
+            "server/**",
+            "functions/**",
+            "src/examples/**",
         ],
     },
     {
-        files: ["**/*.js"],
+        files: ["**/*.{js,jsx}"],
         extends: [js.configs.recommended],
         languageOptions: {
             ecmaVersion: "latest",
@@ -26,10 +34,12 @@ export default tseslint.config(
         },
     },
     {
-        files: ["**/*.ts"],
+        files: ["**/*.{ts,tsx}"],
         extends: [js.configs.recommended, ...tseslint.configs.recommended],
         plugins: {
             import: importPlugin,
+            "react-hooks": reactHooks,
+            "react-refresh": reactRefresh,
         },
         settings: {
             "import/resolver": {
@@ -62,6 +72,19 @@ export default tseslint.config(
                 { prefer: "type-imports" },
             ],
             "@typescript-eslint/no-import-type-side-effects": "error",
+            ...reactHooks.configs.recommended.rules,
+            "react-refresh/only-export-components": [
+                "warn",
+                { allowConstantExport: true },
+            ],
+            "react-hooks/rules-of-hooks": "error",
+            "react-hooks/exhaustive-deps": "warn",
+        },
+    },
+    {
+        files: ["**/*.config.{js,ts}", "scripts/**/*.{js,ts}"],
+        languageOptions: {
+            globals: { ...globals.browser, ...globals.node },
         },
     }
 );

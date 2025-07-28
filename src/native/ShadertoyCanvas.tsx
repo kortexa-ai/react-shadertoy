@@ -4,12 +4,11 @@
  * A convenient wrapper that provides a Canvas for the ShaderToy component.
  */
 import { Canvas, type CanvasProps } from '@react-three/fiber/native';
-import { type ShadertoyProps } from '../core/Shadertoy';
-import { Shadertoy } from '@/core/shaderHelpers';
+import { Shadertoy, type ShadertoyProps } from '../core/Shadertoy';
 
 // Props interface with added style property
 export interface ShadertoyCanvasProps extends ShadertoyProps {
-    style?: any;
+    style?: React.CSSProperties;
     customProps?: Partial<CanvasProps>;
 }
 

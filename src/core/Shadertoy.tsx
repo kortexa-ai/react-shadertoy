@@ -16,8 +16,8 @@
  * See TODO comments throughout the code for more specific details on each item.
  */
 
-import { useRef, useState, useEffect, useMemo } from 'react';
-import { ShaderMaterial, Color, Texture } from 'three';
+import { useRef, useState, useEffect } from 'react';
+import { ShaderMaterial, Color, type Texture, type Mesh, type OrthographicCamera as ThreeOrthographicCamera } from 'three';
 import { extend, useFrame, useThree } from '@react-three/fiber';
 import { OrthographicCamera } from '@react-three/drei';
 import { Suspense } from 'react';
@@ -107,17 +107,18 @@ export function Shadertoy({
       [0, 255, 255, 255]
     );
     setLoadedTextures([checkerTexture]);
+
     return () => {
       loadedTextures.forEach(texture => texture?.dispose());
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Create uniforms once using useRef to prevent recreation on resize
-  const shaderUniformsRef = useRef<Record<string, any>>();
-  
+  const shaderUniformsRef = useRef<Record<string, { value: number | number[] | Texture | null }> | null>(null);
+
   // Initialize uniforms only once
   if (!shaderUniformsRef.current) {
-    const uniformsObj: Record<string, any> = {
+    const uniformsObj: Record<string, { value: number | number[] | Texture | null }> = {
       [UNIFORM_TIME]: { value: 0.0 },
       [UNIFORM_RESOLUTION]: { value: [0, 0] },
     };
@@ -234,9 +235,9 @@ export function Shadertoy({
   // Note: React Three Fiber automatically handles gl.setSize() via ResizeObserver
   // No manual intervention needed for viewport updates
 
-  const cameraRef = useRef(null);
+  const cameraRef = useRef<ThreeOrthographicCamera>(null);
 
-  const meshRef = useRef(null);
+  const meshRef = useRef<Mesh>(null);
 
   return (
     <Suspense fallback={null}>

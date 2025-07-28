@@ -100,7 +100,7 @@ export const processShader = (
     processedCode = processedCode.replace(
         /for\s*\(\s*;\s*([^;]+);([^)]+)\)/g,
         (match, condition, increment) => {
-            const varNameMatch = condition.match(/(\w+)\s*(\+\+|\-\-|<|>|<=|>=|==|!=)/);
+            const varNameMatch = condition.match(/(\w+)\s*(\+\+|\-\-|<|>|<=|>=|==|!=)/); // eslint-disable-line no-useless-escape
             if (varNameMatch && !condition.includes('=')) {
                 const varName = varNameMatch[1];
                 return `for(float ${varName}=0.;${condition};${increment})`;
@@ -130,7 +130,7 @@ export const processShader = (
     );
 
     // Initialize out vec4 fragColor if not assigned before use
-    let injections = [];
+    const injections = [];
     if (processedCode.includes("out vec4 fragColor") && !processedCode.match(/\bfragColor\s*=/)) {
         injections.push("fragColor = vec4(0.);");
     }
