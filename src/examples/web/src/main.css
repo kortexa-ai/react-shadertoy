@@ -1,0 +1,134 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+#root {
+    width: 100%;
+    max-width: 700px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Card Container - Outer container for the example */
+.card-container {
+    width: 100%;
+    max-width: 680px; /* Max content width of 640px + 20px padding each side */
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+/* Title inside the card */
+.card-title {
+    text-align: center;
+    font-size: 1.5em;
+    margin: 0;
+}
+
+/* Container for the shader's Three.js canvas */
+.shader-view-container {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #000;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Shader info section */
+.shader-info {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.shader-info h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.shader-info p {
+    margin: 5px 0;
+    color: #666;
+    font-size: 0.9em;
+}
+
+/* Shader code display */
+.shader-code {
+    margin-top: 20px;
+}
+
+.shader-code h4 {
+    margin: 0 0 10px 0;
+    font-size: 1em;
+    color: #333;
+}
+
+/* Row for buttons */
+.button-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.button-row button {
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+.button-row button:hover {
+    background-color: #0056b3;
+}
+
+.button-row button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.status-text {
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+    margin-top: 5px;
+}
+
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Ensure the Three.js canvas itself fills its container */
+.camera-view-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Separator for controls in the same button row */
+.control-separator {
+    display: inline-block;
+    width: 1px;
+    height: 20px; /* Adjust height to match button/icon size */
+    background-color: #ccc;
+    margin: 0 10px; /* Space around the separator */
+    vertical-align: middle;
+}

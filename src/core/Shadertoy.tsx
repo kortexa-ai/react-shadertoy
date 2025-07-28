@@ -16,10 +16,12 @@
  * See TODO comments throughout the code for more specific details on each item.
  */
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { ShaderMaterial, Color, Texture } from 'three';
 import { extend, useFrame, useThree } from '@react-three/fiber';
 import { OrthographicCamera } from '@react-three/drei';
+import { Suspense } from 'react';
+import { processShader } from './shaderHelpers';
 
 // Import texture definitions and utilities
 import type { TextureProps } from './textures';
@@ -28,54 +30,17 @@ import { createCheckerTexture, createTextureUniforms } from './textures';
 // Register ShaderMaterial with React Three Fiber
 extend({ ShaderMaterial });
 
-/**
- * Shadertoy Built-in Uniforms
- */
-const UNIFORM_TIME = "iTime";
-const UNIFORM_TIMEDELTA = "iTimeDelta";
-const UNIFORM_DATE = "iDate";
-const UNIFORM_FRAME = "iFrame";
-const UNIFORM_MOUSE = "iMouse";
-const UNIFORM_RESOLUTION = "iResolution";
-const UNIFORM_CHANNEL = "iChannel";
-const UNIFORM_CHANNELRESOLUTION = "iChannelResolution";
-const UNIFORM_DEVICEORIENTATION = "iDeviceOrientation";
-
-// Precision values for GLSL
-const PRECISIONS = ["lowp", "mediump", "highp"];
-
-// Fragment shader wrappers
-const SHADERTOY_COMMON_FUNCTIONS = `
-// HSV to RGB conversion
-vec3 hsv(float h, float s, float v) {
-  vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
-  vec3 p = abs(fract(vec3(h) + K.xyz) * 6.0 - K.www);
-  return v * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), s);
-}
-`;
-
-const FS_MAIN_IMAGE_WRAPPER = `
-void main(void) {
-    vec4 fragColor = vec4(0.0, 0.0, 0.0, 1.0);
-    mainImage(fragColor, gl_FragCoord.xy);
-    gl_FragColor = fragColor;
-}
-`;
-
-const FS_DIRECT_WRAPPER = `
-void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-  vec2 FC = fragCoord;
-  vec2 r = iResolution.xy;
-  float t = iTime;
-  vec4 o = vec4(0.0, 0.0, 0.0, 1.0);
-  // ------------------------------
-  // processed direct shader code
-  // ------------------------------
-%SHADER_CODE%
-  // ------------------------------
-  fragColor = o;
-}
-`;
+import {
+  UNIFORM_TIME,
+  UNIFORM_TIMEDELTA,
+  UNIFORM_DATE,
+  UNIFORM_FRAME,
+  UNIFORM_MOUSE,
+  UNIFORM_RESOLUTION,
+  UNIFORM_CHANNEL,
+  UNIFORM_CHANNELRESOLUTION,
+  UNIFORM_DEVICEORIENTATION,
+} from './constants';
 
 const BASIC_VS = `
 varying vec2 vUv;
@@ -86,10 +51,14 @@ void main() {
 `;
 
 const BASIC_FS = `
-void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-    vec2 uv = fragCoord/iResolution.xy;
+uniform float ${UNIFORM_TIME};
+uniform vec2 ${UNIFORM_RESOLUTION};
+
+void main() {
+    vec4 fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    vec2 uv = gl_FragCoord.xy/${UNIFORM_RESOLUTION}.xy;
     vec3 col = vec3(1,1,1);
-    fragColor = vec4(col,1.0);
+    gl_FragColor = vec4(col,1.0);
 }
 `;
 
@@ -121,12 +90,10 @@ export function Shadertoy({
   height,
   devicePixelRatio = 1,
 }: ShadertoyProps) {
-  const { size: { width: useWidth, height: useHeight }, scene, gl } = useThree();
-  const actualWidth = width || useWidth;
-  const actualHeight = height || useHeight;
+  const { size, scene, gl } = useThree();
   const shaderRef = useRef<ShaderMaterial>(null);
 
-  const [frameCount, setFrameCount] = useState(0);
+  const frameCountRef = useRef(0);
   const [startTime] = useState(Date.now() / 1000);
   const lastFrameTimeRef = useRef(0);
   const [mousePosition] = useState([0, 0, 0, 0]);
@@ -145,197 +112,14 @@ export function Shadertoy({
     };
   }, []);
 
-  // Helper function to initialize uninitialized variables of a given type
-  const initializeVariables = (
-    body: string,
-    type: string,
-    initializer: string
-  ): string => {
-    return body.replace(
-      new RegExp(`(${type}\\s+([a-zA-Z_]\\w*(?:\\s*,\\s*[a-zA-Z_]\\w*(?:\\s*=\\s*[^;]+?)?)*)\\s*;)`, 'g'),
-      (_decl: string, _fullDecl: string, varList: string): string => {
-        console.log(`Found uninitialized ${type} variables`);
-        const vars: string[] = [];
-        let currentVar: string = '';
-        let parenDepth: number = 0;
-        let inInitializer: boolean = false;
-
-        for (let i = 0; i < varList.length; i++) {
-          const char = varList[i];
-          if (char === '(') parenDepth++;
-          if (char === ')') parenDepth--;
-          if (char === '=' && parenDepth === 0) inInitializer = true;
-
-          if (char === ',' && parenDepth === 0 && !inInitializer) {
-            const trimmed = currentVar.trim();
-            vars.push(trimmed.includes('=') ? trimmed : `${trimmed}=${initializer}`);
-            currentVar = '';
-            inInitializer = false;
-          } else {
-            currentVar += char;
-          }
-        }
-        if (currentVar) {
-          const trimmed = currentVar.trim();
-          vars.push(trimmed.includes('=') ? trimmed : `${trimmed}=${initializer}`);
-        }
-
-        return `${type} ${vars.join(', ')};`;
-      }
-    );
-  };
-
-  /**
-   * Process shader code for compatibility with Three.js
-   *
-   * This function prepares the shader code for use with WebGL/Three.js by:
-   * 1. Setting the GLSL precision
-   * 2. Detecting the shader format (with main, with mainImage, or direct format)
-   * 3. Adding necessary wrappers around the code
-   * 4. Adding uniform declarations
-   */
-  const processShader = (shaderCode: string): string => {
-    const isValidPrecision = PRECISIONS.includes(precision);
-    const precisionString = `precision ${isValidPrecision ? precision : "highp"} float;\n`;
-    const dprString = `#define DPR ${devicePixelRatio.toFixed(1)}\n`;
-
-
-    // Check if shader is in direct format
-    const hasMain = shaderCode.includes("void main(");
-    const hasMainImage = shaderCode.includes("void mainImage(");
-    const isLikelyDirectFormat = !hasMain && !hasMainImage;
-
-    let wrappedCode = shaderCode;
-    if (isLikelyDirectFormat) {
-      wrappedCode = FS_DIRECT_WRAPPER.replace('%SHADER_CODE%', shaderCode);
-    }
-
-    let processedCode = wrappedCode;
-
-    // Fix uninitialized loop variables with float declaration
-    processedCode = processedCode.replace(
-      /for\s*\(\s*float\s+(\w+)\s*;\s*([^;]+);([^)]+)\)/g,
-      (match, varName, condition, increment) => {
-        if (!condition.includes('=')) {
-          return `for(float ${varName}=0.;${condition};${increment})`;
-        }
-        return match;
-      }
-    );
-
-    // Fix uninitialized loop variables without float declaration
-    processedCode = processedCode.replace(
-      /for\s*\(\s*;\s*([^;]+);([^)]+)\)/g,
-      (match, condition, increment) => {
-        const varNameMatch = condition.match(/(\w+)\s*(\+\+|\-\-|<|>|<=|>=|==|!=)/);
-        if (varNameMatch && !condition.includes('=')) {
-          const varName = varNameMatch[1];
-          return `for(float ${varName}=0.;${condition};${increment})`;
-        }
-        return match;
-      }
-    );
-
-    // Fix mat2(cos(...+vec4(...))) to preserve Shadertoy behavior
-    processedCode = processedCode.replace(
-      /mat2\s*\(\s*cos\s*\(\s*([^)]+)\+vec4\s*\(([^)]+)\)\s*\)\s*\)\s*(\*?\s*[0-9.]+)?/g,
-      (_match, expr, vec4Args, scale) => {
-        const angleExpr = `${expr}+vec4(${vec4Args})`;
-        const scaleFactor = scale ? scale.trim() : '';
-        return `mat2(cos(${angleExpr})${scaleFactor})`; // Keep Shadertoy's vec4 matrix construction
-      }
-    );
-
-    // Clamp all exp calls, multiple passes for nesting
-    processedCode = processedCode.replace(
-      /exp\s*\(\s*([^()]+|\([^()]*\))\s*\)/g,
-      (_match, arg) => `exp(clamp(${arg}, -87.0, 87.0))`
-    );
-    processedCode = processedCode.replace(
-      /exp\s*\(\s*([^()]+|\([^()]*\))\s*\)/g,
-      (_match, arg) => `exp(clamp(${arg}, -87.0, 87.0))`
-    );
-
-    // Initialize out vec4 fragColor if not assigned before use
-    let injections = [];
-    if (processedCode.includes("out vec4 fragColor") && !processedCode.match(/\bfragColor\s*=/)) {
-      injections.push("fragColor = vec4(0.);");
-    }
-
-    // Inject r and t if iResolution or iTime aren't used
-    if (!processedCode.includes("iResolution")) {
-      injections.push("vec2 r = iResolution.xy;");
-    }
-    if (!processedCode.includes("iTime")) {
-      injections.push("float t = iTime;");
-    }
-
-    if (injections.length > 0) {
-      processedCode = processedCode.replace(
-        /void mainImage\s*\(\s*out vec4 fragColor[^)]*\)\s*{/,
-        `$& ${injections.join(" ")}`
-      );
-    }
-
-    // Initialize uninitialized float, vec2, vec3, and vec4 variables inside mainImage
-    processedCode = processedCode.replace(
-      /(void mainImage\s*\(\s*out vec4 fragColor[^)]*\)\s*{)([\s\S]*?)}/,
-      (_match: string, signature: string, body: string): string => {
-        let updatedBody: string = body;
-        // Process float declarations
-        updatedBody = initializeVariables(updatedBody, 'float', '0.');
-        // Process vec2 declarations
-        updatedBody = initializeVariables(updatedBody, 'vec2', 'vec2(0.)');
-        // Process vec3 declarations
-        updatedBody = initializeVariables(updatedBody, 'vec3', 'vec3(0.)');
-        // Process vec4 declarations
-        updatedBody = initializeVariables(updatedBody, 'vec4', 'vec4(0.)');
-        return `${signature}${updatedBody}}`;
-      }
-    );
-
-    let finalCode = "";
-    if (hasMain) {
-      finalCode = precisionString + dprString + SHADERTOY_COMMON_FUNCTIONS + processedCode;
-    } else if (hasMainImage) {
-      finalCode = precisionString + dprString + SHADERTOY_COMMON_FUNCTIONS + processedCode + FS_MAIN_IMAGE_WRAPPER;
-    } else {
-      finalCode = precisionString + dprString + SHADERTOY_COMMON_FUNCTIONS + processedCode + FS_MAIN_IMAGE_WRAPPER;
-    }
-
-    finalCode = finalCode.replace(/texture\(/g, "texture2D(");
-
-    const uniformsToAdd = [
-      `uniform float ${UNIFORM_TIME};`,
-      `uniform vec2 ${UNIFORM_RESOLUTION};`,
-    ];
-    if (finalCode.includes(UNIFORM_TIMEDELTA)) uniformsToAdd.push(`uniform float ${UNIFORM_TIMEDELTA};`);
-    if (finalCode.includes(UNIFORM_FRAME)) uniformsToAdd.push(`uniform int ${UNIFORM_FRAME};`);
-    if (finalCode.includes(UNIFORM_MOUSE)) uniformsToAdd.push(`uniform vec4 ${UNIFORM_MOUSE};`);
-    if (finalCode.includes(UNIFORM_DATE)) uniformsToAdd.push(`uniform vec4 ${UNIFORM_DATE};`);
-    if (finalCode.includes(UNIFORM_DEVICEORIENTATION)) uniformsToAdd.push(`uniform vec4 ${UNIFORM_DEVICEORIENTATION};`);
-    for (let i = 0; i < textures.length; i++) {
-      if (finalCode.includes(`${UNIFORM_CHANNEL}${i}`)) {
-        uniformsToAdd.push(`uniform sampler2D ${UNIFORM_CHANNEL}${i};`);
-      }
-    }
-    if (finalCode.includes(UNIFORM_CHANNELRESOLUTION) && textures.length > 0) {
-      uniformsToAdd.push(`uniform vec3 ${UNIFORM_CHANNELRESOLUTION}[${textures.length}];`);
-    }
-
-    if (uniformsToAdd.length > 0) {
-      const uniformsText = uniformsToAdd.join('\n') + '\n\n';
-      const indexAfterPrecision = precisionString.length + dprString.length;
-      finalCode = finalCode.substring(0, indexAfterPrecision) + uniformsText + finalCode.substring(indexAfterPrecision);
-    }
-
-    return finalCode;
-  };
-
-  const createUniforms = () => {
+  // Create uniforms once using useRef to prevent recreation on resize
+  const shaderUniformsRef = useRef<Record<string, any>>();
+  
+  // Initialize uniforms only once
+  if (!shaderUniformsRef.current) {
     const uniformsObj: Record<string, any> = {
       [UNIFORM_TIME]: { value: 0.0 },
-      [UNIFORM_RESOLUTION]: { value: [actualWidth * devicePixelRatio, actualHeight * devicePixelRatio] },
+      [UNIFORM_RESOLUTION]: { value: [0, 0] },
     };
 
     if (fs.includes(UNIFORM_TIMEDELTA)) uniformsObj[UNIFORM_TIMEDELTA] = { value: 0.0 };
@@ -355,38 +139,66 @@ export function Shadertoy({
       });
     }
 
-    return uniformsObj;
-  };
+    shaderUniformsRef.current = uniformsObj;
+  }
 
-  const aspect = actualWidth / actualHeight;
-  const planeWidth = aspect > 1 ? 2 * aspect : 2;
-  const planeHeight = aspect > 1 ? 2 : 2 / aspect;
+  // Store size in ref to avoid dependency issues
+  const sizeRef = useRef({ width: 0, height: 0 });
+  sizeRef.current = { width: width || size.width, height: height || size.height };
 
+  // Update uniforms and camera every frame
   useFrame(() => {
-    if (!shaderRef.current) return;
+    if (!shaderRef.current || !cameraRef.current) return;
 
     const currentTime = Date.now() / 1000 - startTime;
     const delta = lastFrameTimeRef.current ? currentTime - lastFrameTimeRef.current : 0;
     lastFrameTimeRef.current = currentTime;
 
-    const material = shaderRef.current;
-    const uniforms = material.uniforms;
+    const uniforms = shaderRef.current.uniforms;
+    const currentWidth = sizeRef.current.width;
+    const currentHeight = sizeRef.current.height;
+    const aspect = currentWidth / currentHeight;
 
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = d.getMonth() + 1;
-    const day = d.getDate();
-    const seconds = d.getHours() * 60 * 60 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() * 0.001;
+    // Update camera bounds to match aspect ratio
+    if (aspect > 1) {
+      cameraRef.current.left = -aspect;
+      cameraRef.current.right = aspect;
+      cameraRef.current.top = 1;
+      cameraRef.current.bottom = -1;
+    } else {
+      cameraRef.current.left = -1;
+      cameraRef.current.right = 1;
+      cameraRef.current.top = 1 / aspect;
+      cameraRef.current.bottom = -1 / aspect;
+    }
+    cameraRef.current.updateProjectionMatrix();
 
+    // Update mesh geometry scale to match new aspect ratio
+    if (meshRef.current) {
+      const newScaleX = aspect > 1 ? aspect : 1;
+      const newScaleY = aspect > 1 ? 1 : 1 / aspect;
+      meshRef.current.scale.set(newScaleX, newScaleY, 1);
+    }
+
+    // Update uniforms
     if (uniforms[UNIFORM_TIME]) uniforms[UNIFORM_TIME].value = currentTime;
     if (uniforms[UNIFORM_TIMEDELTA]) uniforms[UNIFORM_TIMEDELTA].value = delta;
-    if (uniforms[UNIFORM_DATE]) uniforms[UNIFORM_DATE].value = [year, month, day, seconds];
-    if (uniforms[UNIFORM_FRAME]) {
-      uniforms[UNIFORM_FRAME].value = frameCount;
-      setFrameCount(prev => prev + 1);
+    if (uniforms[UNIFORM_RESOLUTION]) {
+      uniforms[UNIFORM_RESOLUTION].value = [currentWidth * devicePixelRatio, currentHeight * devicePixelRatio];
     }
-    if (uniforms[UNIFORM_RESOLUTION]) uniforms[UNIFORM_RESOLUTION].value = [actualWidth * devicePixelRatio, actualHeight * devicePixelRatio];
+    if (uniforms[UNIFORM_FRAME]) {
+      uniforms[UNIFORM_FRAME].value = frameCountRef.current;
+      frameCountRef.current += 1;
+    }
     if (uniforms[UNIFORM_MOUSE]) uniforms[UNIFORM_MOUSE].value = mousePosition;
+    if (uniforms[UNIFORM_DATE]) {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
+      const seconds = d.getHours() * 60 * 60 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() * 0.001;
+      uniforms[UNIFORM_DATE].value = [year, month, day, seconds];
+    }
   });
 
   useEffect(() => {
@@ -409,36 +221,46 @@ export function Shadertoy({
   useEffect(() => {
     if (!shaderRef.current) return;
 
-    const processedFS = processShader(fs);
-    console.log('Processed Fragment Shader:\n', processedFS);
-
-    shaderRef.current.fragmentShader = processedFS;
-    shaderRef.current.vertexShader = vs;
-    shaderRef.current.needsUpdate = true;
+    try {
+      const processedFS = processShader(fs, precision, devicePixelRatio, textures.length);
+      shaderRef.current.fragmentShader = processedFS;
+      shaderRef.current.vertexShader = vs;
+      shaderRef.current.needsUpdate = true;
+    } catch (error) {
+      console.error('Shader processing error:', error);
+    }
   }, [fs, vs, precision, devicePixelRatio, textures.length]);
 
+  // Note: React Three Fiber automatically handles gl.setSize() via ResizeObserver
+  // No manual intervention needed for viewport updates
+
+  const cameraRef = useRef(null);
+
+  const meshRef = useRef(null);
+
   return (
-    <>
+    <Suspense fallback={null}>
       <OrthographicCamera
+        ref={cameraRef}
         makeDefault
         position={[0, 0, 5]}
         near={0.1}
         far={1000}
-        left={-planeWidth / 2}
-        right={planeWidth / 2}
-        top={planeHeight / 2}
-        bottom={-planeHeight / 2}
+        left={-1}
+        right={1}
+        top={1}
+        bottom={-1}
       />
-      <mesh position={[0, 0, 0]}>
-        <planeGeometry args={[planeWidth, planeHeight]} />
+      <mesh ref={meshRef}>
+        <planeGeometry args={[2, 2]} />
         <shaderMaterial
           ref={shaderRef}
           vertexShader={vs}
           fragmentShader={fs}
-          uniforms={createUniforms()}
+          uniforms={shaderUniformsRef.current}
         />
       </mesh>
-    </>
+    </Suspense>
   );
 }
 

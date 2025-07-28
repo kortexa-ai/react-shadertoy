@@ -1,6 +1,6 @@
 {
     "name": "@kortexa-ai/react-shadertoy",
-    "version": "0.1.3",
+    "version": "0.2.0",
     "description": "React component for Shadertoy shaders",
     "copyright": "Copyright © 2025 kortexa.ai",
     "author": {
@@ -29,6 +29,7 @@
     "type": "module",
     "files": [
         "dist",
+        "src/examples",
         "README.md",
         "LICENSE",
         "CONTRIBUTING.md",
@@ -49,13 +50,14 @@
     },
     "scripts": {
         "clean": "rm -rf .next dist dev-dist lib build coverage .firebase data server/data",
+        "clean:examples": "find src/examples -type d \\( -name 'dist' -o -name 'node_modules' \\) -exec rm -rf {} +",
         "lint": "eslint . --report-unused-disable-directives --no-error-on-unmatched-pattern",
         "lint:fix": "npm run lint -- --fix",
         "typecheck": "tsc -p tsconfig.app.json --noEmit",
         "build": "vite build --mode production",
         "build:nomin": "vite build --mode production --minify false --sourcemap inline",
         "validate": "npm run typecheck && npm run lint",
-        "prepublishOnly": "npm run validate && npm run build"
+        "prepublishOnly": "npm run clean:examples && npm run validate && npm run build"
     },
     "peerDependencies": {
         "@react-three/drei": "^10.0.0",
@@ -69,38 +71,38 @@
         "three": "^0.175.0"
     },
     "devDependencies": {
-        "@react-three/drei": "^10.1.2",
-        "@react-three/fiber": "^9.1.2",
-        "@types/node": "^22.15.30",
-        "@types/react": "^19.1.6",
+        "@react-three/drei": "^10.6.1",
+        "@react-three/fiber": "^9.2.0",
+        "@types/node": "^24.1.0",
+        "@types/react": "^19.1.8",
         "@types/react-dom": "^19.1.6",
         "@types/semver": "^7.7.0",
-        "@types/three": "^0.177.0",
-        "@vitejs/plugin-react-swc": "^3.10.1",
+        "@types/three": "^0.178.1",
+        "@vitejs/plugin-react-swc": "^3.11.0",
         "ajv": "^8.17.1",
-        "dotenv": "^16.5.0",
-        "eslint": "^9.28.0",
-        "eslint-import-resolver-typescript": "^4.4.3",
-        "eslint-plugin-import": "^2.31.0",
+        "dotenv": "^17.2.1",
+        "eslint": "^9.32.0",
+        "eslint-import-resolver-typescript": "^4.4.4",
+        "eslint-plugin-import": "^2.32.0",
         "eslint-plugin-react-hooks": "^5.2.0",
         "eslint-plugin-react-refresh": "^0.4.20",
         "fs": "^0.0.1-security",
-        "globals": "^16.2.0",
-        "jiti": "^2.4.2",
+        "globals": "^16.3.0",
+        "jiti": "^2.5.1",
         "jsdom": "^26.1.0",
         "nodemon": "^3.1.10",
-        "npm-check-updates": "^18.0.1",
+        "npm-check-updates": "^18.0.2",
         "path": "^0.12.7",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
-        "three": "^0.177.0",
+        "three": "^0.178.0",
         "tsc-alias": "^1.8.16",
-        "tsx": "^4.19.4",
+        "tsx": "^4.20.3",
         "typescript": "~5.8.3",
-        "typescript-eslint": "^8.33.1",
-        "vite": "^6.3.5",
+        "typescript-eslint": "^8.38.0",
+        "vite": "^7.0.6",
         "vite-plugin-dts": "^4.5.4",
-        "vite-plugin-glsl": "^1.4.2"
+        "vite-plugin-glsl": "^1.5.1"
     },
     "engines": {
         "node": ">=18"

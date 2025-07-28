@@ -27,6 +27,9 @@ export function ShadertoyCanvas({
         <Canvas
             orthographic={true}
             gl={{
+                antialias: true,
+                alpha: true,
+                powerPreference: "high-performance",
                 ...customProps.gl,
             }}
             style={{
@@ -34,6 +37,7 @@ export function ShadertoyCanvas({
                 height: '100%',
                 ...style,
             }}
+            resize={{ scroll: true, debounce: { scroll: 50, resize: 0 } }}
             {...customProps}
         >
             <Shadertoy {...props} />
