@@ -16,7 +16,7 @@
  * See TODO comments throughout the code for more specific details on each item.
  */
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { ShaderMaterial, Color, type Texture, type Mesh, type OrthographicCamera as ThreeOrthographicCamera } from 'three';
 import { extend, useFrame, useThree } from '@react-three/fiber';
 import { OrthographicCamera } from '@react-three/drei';
@@ -90,34 +90,22 @@ export function Shadertoy({
   height,
   devicePixelRatio = 1,
 }: ShadertoyProps) {
-  const { size, scene, gl } = useThree();
+  const { size, gl } = useThree();
   const shaderRef = useRef<ShaderMaterial>(null);
 
   const frameCountRef = useRef(0);
-  const [startTime] = useState(Date.now() / 1000);
+  const startTimeRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef(0);
   const [mousePosition] = useState([0, 0, 0, 0]);
-  const [loadedTextures, setLoadedTextures] = useState<(Texture | null)[]>([]);
+  const [loadedTextures] = useState<(Texture | null)[]>(() => [
+    createCheckerTexture(256, 8, [255, 0, 0, 255], [0, 255, 255, 255]),
+  ]);
 
-  useEffect(() => {
-    const checkerTexture = createCheckerTexture(
-      256,
-      8,
-      [255, 0, 0, 255],
-      [0, 255, 255, 255]
-    );
-    setLoadedTextures([checkerTexture]);
+  useEffect(() => () => {
+    loadedTextures.forEach(texture => texture?.dispose());
+  }, [loadedTextures]);
 
-    return () => {
-      loadedTextures.forEach(texture => texture?.dispose());
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Create uniforms once using useRef to prevent recreation on resize
-  const shaderUniformsRef = useRef<Record<string, { value: number | number[] | Texture | null }> | null>(null);
-
-  // Initialize uniforms only once
-  if (!shaderUniformsRef.current) {
+  const shaderUniforms = useMemo(() => {
     const uniformsObj: Record<string, { value: number | number[] | Texture | null }> = {
       [UNIFORM_TIME]: { value: 0.0 },
       [UNIFORM_RESOLUTION]: { value: [0, 0] },
@@ -140,24 +128,31 @@ export function Shadertoy({
       });
     }
 
-    shaderUniformsRef.current = uniformsObj;
-  }
+    return uniformsObj;
+  }, [fs, loadedTextures, uniforms]);
 
-  // Store size in ref to avoid dependency issues
-  const sizeRef = useRef({ width: 0, height: 0 });
-  sizeRef.current = { width: width || size.width, height: height || size.height };
+  useEffect(() => {
+    if (shaderRef.current) {
+      shaderRef.current.uniforms = shaderUniforms;
+    }
+  }, [shaderUniforms]);
+
 
   // Update uniforms and camera every frame
   useFrame(() => {
     if (!shaderRef.current || !cameraRef.current) return;
 
-    const currentTime = Date.now() / 1000 - startTime;
+    if (startTimeRef.current === null) {
+      startTimeRef.current = performance.now() / 1000;
+    }
+    const now = performance.now() / 1000;
+    const currentTime = now - startTimeRef.current;
     const delta = lastFrameTimeRef.current ? currentTime - lastFrameTimeRef.current : 0;
     lastFrameTimeRef.current = currentTime;
 
     const uniforms = shaderRef.current.uniforms;
-    const currentWidth = sizeRef.current.width;
-    const currentHeight = sizeRef.current.height;
+    const currentWidth = width ?? size.width;
+    const currentHeight = height ?? size.height;
     const aspect = currentWidth / currentHeight;
 
     // Update camera bounds to match aspect ratio
@@ -203,21 +198,25 @@ export function Shadertoy({
   });
 
   useEffect(() => {
-    if (!scene || !gl) return;
+    if (!gl) return;
+
+    const originalColor = new Color();
+    gl.getClearColor(originalColor);
+    const originalAlpha = gl.getClearAlpha();
 
     if (clearColor) {
-      scene.background = new Color(clearColor[0], clearColor[1], clearColor[2]);
-      gl.setClearAlpha(clearColor[3]);
+      const [r, g, b, a] = clearColor;
+      gl.setClearColor(new Color(r, g, b));
+      gl.setClearAlpha(a);
     } else {
-      scene.background = null;
       gl.setClearAlpha(0);
     }
 
     return () => {
-      if (scene) scene.background = null;
-      if (gl) gl.setClearAlpha(1);
+      gl.setClearColor(originalColor);
+      gl.setClearAlpha(originalAlpha);
     };
-  }, [scene, gl, clearColor]);
+  }, [gl, clearColor]);
 
   useEffect(() => {
     if (!shaderRef.current) return;
@@ -258,7 +257,7 @@ export function Shadertoy({
           ref={shaderRef}
           vertexShader={vs}
           fragmentShader={fs}
-          uniforms={shaderUniformsRef.current}
+          uniforms={shaderUniforms}
         />
       </mesh>
     </Suspense>
