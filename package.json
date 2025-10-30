@@ -1,6 +1,6 @@
 {
     "name": "@kortexa-ai/react-shadertoy",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "description": "React component for Shadertoy shaders",
     "copyright": "Copyright © 2025 kortexa.ai",
     "author": {
@@ -13,7 +13,6 @@
         "shadertoy",
         "threejs",
         "react",
-        "react-native",
         "webgl"
     ],
     "license": "MIT",
@@ -41,11 +40,6 @@
             "types": "./dist/index.d.ts",
             "import": "./dist/react-shadertoy.js",
             "require": "./dist/react-shadertoy.js"
-        },
-        "./native": {
-            "types": "./dist/native.d.ts",
-            "import": "./dist/native.js",
-            "require": "./dist/native.js"
         }
     },
     "scripts": {
@@ -63,36 +57,30 @@
     "peerDependencies": {
         "@react-three/drei": "^10.0.0",
         "@react-three/fiber": "^9.0.0",
-        "expo-gl": "^15.0.0",
-        "r3f-native-orbitcontrols": "^1.0.12",
         "react": "^18.0.0 || ^19.0.0",
         "react-dom": "^18.0.0 || ^19.0.0",
-        "react-native": "^0.79.0",
-        "react-native-web": "^0.19.13",
-        "three": "^0.175.0"
+        "three": "^0.180.0"
     },
     "devDependencies": {
         "@react-three/drei": "^10.7.6",
         "@react-three/fiber": "^9.4.0",
-        "@types/node": "^24.8.1",
+        "@types/node": "^24.9.2",
         "@types/react": "^19.2.2",
         "@types/react-dom": "^19.2.2",
         "@types/semver": "^7.7.1",
         "@types/three": "^0.180.0",
-        "@vitejs/plugin-react-swc": "^4.1.0",
-        "ajv": "^8.17.1",
+        "@vitejs/plugin-react-swc": "^4.2.0",
         "dotenv": "^17.2.3",
         "eslint": "^9.38.0",
         "eslint-import-resolver-typescript": "^4.4.4",
         "eslint-plugin-import": "^2.32.0",
-        "eslint-plugin-react-hooks": "^7.0.0",
+        "eslint-plugin-react-hooks": "^7.0.1",
         "eslint-plugin-react-refresh": "^0.4.24",
-        "fs": "^0.0.1-security",
         "globals": "^16.4.0",
         "jiti": "^2.6.1",
-        "jsdom": "^27.0.0",
+        "jsdom": "^27.0.1",
         "nodemon": "^3.1.10",
-        "npm-check-updates": "^19.1.1",
+        "npm-check-updates": "^19.1.2",
         "path": "^0.12.7",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
@@ -100,8 +88,8 @@
         "tsc-alias": "^1.8.16",
         "tsx": "^4.20.6",
         "typescript": "~5.9.3",
-        "typescript-eslint": "^8.46.1",
-        "vite": "^7.1.10",
+        "typescript-eslint": "^8.46.2",
+        "vite": "^7.1.12",
         "vite-plugin-dts": "^4.5.4",
         "vite-plugin-glsl": "^1.5.4"
     },
